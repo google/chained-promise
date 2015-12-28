@@ -1,6 +1,8 @@
 "use strict";
 import create from "lodash.create";
-import mfix from "mfix";
+import fix from "./fix";
+
+import "babel-polyfill";
 
 /**
  * An extended promise for recurring promises.
@@ -58,10 +60,10 @@ class ChainedPromise extends Promise {
    * @template T
    */
   forEach(fn) {
-    return mfix((v) => {
+    return fix((v) => {
       fn(v);
       return this.next.getter(v);
-    });
+    })(this);
   }
 
   /**

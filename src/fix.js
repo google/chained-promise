@@ -24,20 +24,14 @@ var fix = (fn) => (promise) => {
   var resolver = (v) => {
     try {
       var nextPromise = fn(v);
-      nextPromise.then(resolver);
-      if (nextPromise.catch) {
-        nextPromise.catch(rejecter);
-      }
+      nextPromise.then(resolver, rejecter);
     } catch(err) {
       rejecter(err);
     }
   };
   return new Promise((resolve, reject) => {
     rejecter = reject;
-    promise.then(resolver);
-    if (promise.catch) {
-      promise.catch(reject);
-    }
+    promise.then(resolver, reject);
   });
 };
 

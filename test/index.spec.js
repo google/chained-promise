@@ -44,10 +44,10 @@ describe("ChainedPromise", function () {
   });
   describe("flatMap", function () {
     it("composes flat map functions", function (done) {
-      let addOnePromise = function(v) {
+      let addOnePromise = function (v) {
         return Promise.resolve(Object.assign(v, {data: v.data + 1}));
       };
-      let doublePromise = function(v) {
+      let doublePromise = function (v) {
         return Promise.resolve(Object.assign(v, {data: v.data * 2}));
       };
       var dataCollected = [];
@@ -77,6 +77,19 @@ describe("ChainedPromise", function () {
       testChainedPromise.flatMap(addOnePromise).flatMap(doublePromise).forEach((v) => {
         dataCollected.push(v.data);
       }).catch((err) => console.error(err.stack, err));
+    });
+  });
+  describe("then", function () {
+    it("bypasses composition when registering reject handler only", function (done) {
+      var testChainedPromise = new ChainedPromise((resolver, rejecter) => {
+        resolver(1);
+      });
+      testChainedPromise.flatMap((v) => v * 2);
+      testChainedPromise.then(undefined, console.error);
+      testChainedPromise.then((v) => {
+        v.should.eql(2); // i.e. flatMapped function should have been invoked only once.
+        done();
+      });
     });
   });
 });

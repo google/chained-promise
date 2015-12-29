@@ -21,9 +21,9 @@
     "gulp-istanbul": "^0.10.3",
     "gulp-mocha": "^2.2.0",
     "gulp-sourcemaps": "^1.6.0",
-    "isparta": "^4.0.0"
+    "isparta": "^4.0.0",
+    "mocha-babel": "^3.0.0"
   },
   "dependencies": {
-    "lodash.create": "^3.1.1"
   }
 }

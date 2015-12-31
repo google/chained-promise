@@ -84,4 +84,20 @@ describe("fix", function() {
       done();
     });
   });
+  it("stops the chain when complete call is made", function(done) {
+    var factorialFiveFn = (v, complete) => {
+      if (v.i == 5) {
+        // If this it fifth iteration, complete the chain with the given factorial value.
+        complete(v.f);
+      } else {
+        // Otherwise return a promise that resolves into the next iteration.
+        return Promise.resolve({i: v.i + 1, f: v.f * (v.i + 1)});
+      }
+    };
+    var initialPromise = Promise.resolve({i: 1, f: 1});
+    fix(factorialFiveFn)(initialPromise).then((v) => {
+      v.should.eql(120); // 5!
+      done();
+    }).catch((err) => console.error(err.stack, err));
+  });
 });

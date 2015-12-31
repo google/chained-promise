@@ -1,13 +1,23 @@
 {
   "name": "chained-promise",
   "version": "0.0.0",
-  "description": "Monadic programming tools over recurring promises",
-  "main": "index.js",
+  "description": "Functional programming tools for recurring promises",
+  "main": "dist/index.js",
+  "files": [
+    "dist/*",
+    "src/*",
+    "README.md",
+    "LICENSE",
+    "gulpfile.bable.js"
+  ],
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "gulp test",
+    "travis": "gulp"
   },
-  "author": "In-Ho Yi",
-  "license": "ISC",
+  "authors": [
+    "In-Ho Yi <yiinho@google.com>"
+  ],
+  "license": "Apache-2.0",
   "devDependencies": {
     "babel": "^6.3.26",
     "babel-cli": "^6.3.17",

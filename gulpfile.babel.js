@@ -45,3 +45,14 @@ gulp.task('coverage', () => {
         .pipe(istanbul.writeReports())
     });
 });
+
+// Transpile with Babel.
+gulp.task('dist', () => {
+  gulp.src('src/**/*.js')
+    .pipe(sourcemaps.init())
+    .pipe(babel())
+    .pipe(sourcemaps.write('.',  {sourceRoot: '../src/'}))
+    .pipe(gulp.dest('dist'));
+});
+
+gulp.task('default', ['test', 'dist']);

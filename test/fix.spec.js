@@ -16,7 +16,7 @@
 "use strict";
 
 import chai from "chai";
-import fix from "../src/fix";
+import {fix} from "../src/index";
 
 chai.should();
 var assert = chai.assert;

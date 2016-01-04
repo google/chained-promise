@@ -1,5 +1,7 @@
 # Chained Promise: functional programming tools for recurring promises
 
+[![Join the chat at https://gitter.im/google/chained-promise](https://badges.gitter.im/google/chained-promise.svg)](https://gitter.im/google/chained-promise?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 We often find recurring patterns when handling asynchronous logic with promises, such as an HTTP endpoint that paginates and gives you a URL pointer to the next available dataset.
 
 `Chained Promise` provides an extended Promise class that you can use to easily abstract out recurring patterns. See jsdocs for more detailed explanations.

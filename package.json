@@ -3,6 +3,10 @@
   "version": "0.0.0",
   "description": "Functional programming tools for recurring promises",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/google/chained-promise.git"
+  },
   "files": [
     "dist/*",
     "src/*",

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-"use strict";
 import fix from "./fix";
 
 /**
@@ -56,21 +55,21 @@ class ChainedPromise extends Promise {
    * @template T
    */
   _nextPromise(v) {
-    var nextPromise = ChainedPromise.from(this.next(v), this.next);
+    const nextPromise = ChainedPromise.from(this.next(v), this.next);
     nextPromise.flatMapChain = this.flatMapChain;
     return nextPromise;
   }
 
   /**
-   * @param executor - Promise executor
-   * @param {function(<T>) : Promise.<T>} next
+   * @param {function(function, function)} executor Promise executor
+   * @param {function(T) : Promise.<T>} next
    * @template T
    */
   constructor(executor, next = ChainedPromise.nextFieldPicker("next")) {
     super(executor);
     /**
      * Function to construct promise to next item in chain.
-     * @type {function(<T>) : Promise.<T>}
+     * @type {function(T) : Promise.<T>}
      * @template T
      */
     this.next = next;
@@ -80,7 +79,7 @@ class ChainedPromise extends Promise {
   /**
    * Creates a ChainedPromise that extends given Promise.
    * @param {Promise.<T>} innerPromise
-   * @param {function(<T>) : Promise.<T>} next
+   * @param {function(T) : Promise.<T>} next
    * @returns {ChainedPromise.<T>}
    * @template T
    */
@@ -94,8 +93,8 @@ class ChainedPromise extends Promise {
 
   /**
    * Returns a function to pick the given attribute.
-   * @param attr - name of the attribute (that will contain the next promise).
-   * @returns {function(<T>) : Promise.<T>}
+   * @param {string} attr Name of the attribute (that will contain the next promise).
+   * @returns {function(T) : Promise.<T>}
    * @template T
    */
   static nextFieldPicker(attr) {
@@ -103,7 +102,7 @@ class ChainedPromise extends Promise {
   }
 
   /**
-   * @param {function(<T>)} fn
+   * @param {function(T)} fn
    * @returns {Promise}
    * @template T
    */
@@ -117,7 +116,7 @@ class ChainedPromise extends Promise {
   /**
    * Stacks up flat map operation to be performed in this promise. See {@link ChainedPromise} for
    * examples.
-   * @param {function(<T>) : Promise.<U>} fn
+   * @param {function(T) : Promise.<U>} fn
    * @returns {ChainedPromise.<U>}
    * @template T
    * @template U
@@ -130,8 +129,11 @@ class ChainedPromise extends Promise {
   /**
    * Overrides Promise.then to compose with extra functions. See {@link ChainedPromise} for the
    * specifics of available compositions.
+   * @param {function(T): (U | Promise.<U>)} onFulfilled
+   * @param {function(*): (U | Promise.<U>)} onRejected
    * @returns {Promise.<T>}
    * @template T
+   * @template U
    */
   then(onFulfilled, onRejected) {
     if (!onFulfilled) {
@@ -139,11 +141,11 @@ class ChainedPromise extends Promise {
       return super.then(onFulfilled, onRejected);
     }
     // Branch out no-op special case, since "super" in ES6 is not a first-class citizen.
-    if (this.flatMapChain.length == 0) {
+    if (this.flatMapChain.length === 0) {
       return super.then(onFulfilled, onRejected);
     } else {
-      var flatMapped = super.then(this.flatMapChain[0]);
-      flatMapped = this.flatMapChain.slice(1).reduce((x,y) => x.then(y), flatMapped);
+      const firstFlatMapped = super.then(this.flatMapChain[0]);
+      const flatMapped = this.flatMapChain.slice(1).reduce((x,y) => x.then(y), firstFlatMapped);
       return flatMapped.then(onFulfilled, onRejected);
     }
   }

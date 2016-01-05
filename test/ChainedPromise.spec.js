@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-"use strict";
-
 import chai from "chai";
 import "babel-polyfill";
 import ChainedPromise from "../src/index";
 
 chai.should();
-var assert = chai.assert;
-
-var nullPromise = new Promise((resolver, rejecter) => {
-});
 
 describe("ChainedPromise", function () {
   describe("forEach", function () {
     it("runs function on each value", function (done) {
-      var dataCollected = [];
-      var thirdPromise = Promise.resolve({
+      const dataCollected = [];
+      const thirdPromise = Promise.resolve({
         data: 3,
         next: {
           then: (resolver) => {
@@ -42,11 +36,11 @@ describe("ChainedPromise", function () {
           }
         }
       });
-      var secondPromise = Promise.resolve({
+      const secondPromise = Promise.resolve({
         data: 2,
         next: thirdPromise
       });
-      var testChainedPromise = new ChainedPromise((resolver, rejecter) => {
+      const testChainedPromise = new ChainedPromise((resolver) => {
         resolver({
           data: 1,
           next: secondPromise
@@ -59,14 +53,14 @@ describe("ChainedPromise", function () {
   });
   describe("flatMap", function () {
     it("composes flat map functions", function (done) {
-      let addOnePromise = function (v) {
+      const addOnePromise = function (v) {
         return Promise.resolve(Object.assign(v, {data: v.data + 1}));
       };
-      let doublePromise = function (v) {
+      const doublePromise = function (v) {
         return Promise.resolve(Object.assign(v, {data: v.data * 2}));
       };
-      var dataCollected = [];
-      var thirdPromise = Promise.resolve({
+      const dataCollected = [];
+      const thirdPromise = Promise.resolve({
         data: 3,
         next: {
           then: (resolver) => {
@@ -79,11 +73,11 @@ describe("ChainedPromise", function () {
           }
         }
       });
-      var secondPromise = Promise.resolve({
+      const secondPromise = Promise.resolve({
         data: 2,
         next: thirdPromise
       });
-      var testChainedPromise = new ChainedPromise((resolver, rejecter) => {
+      const testChainedPromise = new ChainedPromise((resolver) => {
         resolver({
           data: 1,
           next: secondPromise
@@ -96,7 +90,7 @@ describe("ChainedPromise", function () {
   });
   describe("then", function () {
     it("bypasses composition when registering reject handler only", function (done) {
-      var testChainedPromise = new ChainedPromise((resolver, rejecter) => {
+      const testChainedPromise = new ChainedPromise((resolver) => {
         resolver(1);
       });
       testChainedPromise.flatMap((v) => v * 2);

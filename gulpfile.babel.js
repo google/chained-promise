@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-"use strict";
 import gulp from "gulp";
 
-import exit from "gulp-exit";
 import babel from "gulp-babel";
 import sourcemaps from "gulp-sourcemaps";
 import babelRegister from "babel-register";
@@ -24,50 +22,60 @@ import babelRegister from "babel-register";
 // Import testing modules.
 import mocha from "gulp-mocha";
 import istanbul from "gulp-istanbul";
-const isparta = require('isparta');
+const isparta = require("isparta");
+
+// Eslint module.
+import eslint from "gulp-eslint";
+
+gulp.task("lint", () => {
+  return gulp.src(["./*.js", "src/**/*.js", "test/**/*.js"])
+    .pipe(eslint())
+    .pipe(eslint.format())
+    .pipe(eslint.failAfterError());
+});
 
 // Runs the Mocha test suite.
-gulp.task('test', () => {
-  gulp.src('src/**/*.js')
-    .on('finish', () => {
-      gulp.src('test/**/*.js')
+gulp.task("test", () => {
+  gulp.src("src/**/*.js")
+    .on("finish", () => {
+      gulp.src("test/**/*.js")
         .pipe(mocha({
-          reporter: 'spec',
+          reporter: "spec",
           timeout: 2000,
           compilers: {
             js: babelRegister
           }
-        }))
+        }));
     });
 });
 
 // Instrument for coverage.
-gulp.task('coverage', () => {
-  gulp.src('src/**/*.js')
+gulp.task("coverage", () => {
+  gulp.src("src/**/*.js")
     .pipe(istanbul({
       instrumenter: isparta.Instrumenter
     }))
     .pipe(istanbul.hookRequire())
-    .on('finish', () => {
-      gulp.src('test/**/*.js')
+    .on("finish", () => {
+      gulp.src("test/**/*.js")
         .pipe(mocha({
-          reporter: 'spec',
+          reporter: "spec",
           timeout: 2000,
           compilers: {
             js: babelRegister
           }
         }))
-        .pipe(istanbul.writeReports())
+        .pipe(istanbul.writeReports());
     });
 });
 
 // Transpile with Babel.
-gulp.task('dist', () => {
-  gulp.src('src/**/*.js')
+gulp.task("dist", () => {
+  gulp.src("src/**/*.js")
     .pipe(sourcemaps.init())
     .pipe(babel())
-    .pipe(sourcemaps.write('.',  {sourceRoot: '../src/'}))
-    .pipe(gulp.dest('dist'));
+    .pipe(sourcemaps.write(".",  {sourceRoot: "../src/"}))
+    .pipe(gulp.dest("dist"));
 });
 
-gulp.task('default', ['test', 'dist']);
+gulp.task("default", ["lint", "test", "dist"]);

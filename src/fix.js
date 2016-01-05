@@ -13,8 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-"use strict";
-
 /**
  * Fix operator that continuously resolves next promise returned from the function that consumes
  * previously resolved value.
@@ -47,26 +45,26 @@
  * fix(promiseFactorial)(Promise.resolve({i:1, f:1})).then(console.log);
  * ```
  *
- * @param {function(<T>, function(<U>)) : Promise} fn
+ * @param {function(T, function(U)) : Promise} fn
  * @returns {function(Promise.<T>) : Promise.<U>}
  * @template T
  * @template U
  */
-var fix = (fn) => (promise) => {
+const fix = (fn) => (promise) => {
   /**
    * Resolve handler to resolve the resulting promise and end the chain.
    */
-  var finalResolver;
-  var rejecter;
-  var resolver = (v) => {
+  let finalResolver;
+  let rejecter;
+  let resolver = (v) => {
     try {
-      var completeCalled = false;
-      var completeValue;
-      var complete = function(v) {
+      let completeCalled = false;
+      let completeValue;
+      let complete = function (vComplete) {
         completeCalled = true;
-        completeValue = v;
+        completeValue = vComplete;
       };
-      var nextPromise = fn(v, complete);
+      const nextPromise = fn(v, complete);
       if (completeCalled) {
         finalResolver(completeValue);
         resolver = null;

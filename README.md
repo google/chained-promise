@@ -1,6 +1,6 @@
 # Chained Promise: functional programming tools for recurring promises
 
-[![Join the chat at https://gitter.im/google/chained-promise](https://badges.gitter.im/google/chained-promise.svg)](https://gitter.im/google/chained-promise?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/google/chained-promise.svg?branch=travis-ci)](https://travis-ci.org/google/chained-promise) [![Coverage Status](https://coveralls.io/repos/google/chained-promise/badge.svg?branch=master&service=github)](https://coveralls.io/github/google/chained-promise?branch=master) [![Join the chat at https://gitter.im/google/chained-promise](https://badges.gitter.im/google/chained-promise.svg)](https://gitter.im/google/chained-promise?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 We often find recurring patterns when handling asynchronous logic with promises, such as an HTTP endpoint that paginates and gives you a URL pointer to the next available dataset.
 

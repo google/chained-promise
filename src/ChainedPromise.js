@@ -127,6 +127,18 @@ class ChainedPromise extends Promise {
   }
 
   /**
+   * Non-async equivalent of {@link #flatMap}.
+   * @param {function(T) : U} fn
+   * @returns {ChainedPromise.<U>}
+   * @template T
+   * @template U
+   */
+  map(fn) {
+    this.flatMap((v) => Promise.resolve(fn(v)));
+    return this;
+  }
+
+  /**
    * Overrides Promise.then to compose with extra functions. See {@link ChainedPromise} for the
    * specifics of available compositions.
    * @param {function(T): (U | Promise.<U>)} onFulfilled

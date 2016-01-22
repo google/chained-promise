@@ -88,6 +88,39 @@ describe("ChainedPromise", function () {
       }).catch((err) => console.error(err.stack, err));
     });
   });
+  describe("map", function () {
+    it("composes map functions", function (done) {
+      const addOneFunction = (v) => Object.assign(v, {data: v.data + 1});
+      const doubleFunction = (v) => Object.assign(v, {data: v.data * 2});
+      const dataCollected = [];
+      const thirdPromise = Promise.resolve({
+        data: 3,
+        next: {
+          then: (resolver) => {
+            if (!resolver) {
+              // Skip catch call.
+              return;
+            }
+            dataCollected.should.eql([4, 6, 8]);
+            done();
+          }
+        }
+      });
+      const secondPromise = Promise.resolve({
+        data: 2,
+        next: thirdPromise
+      });
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: 1,
+          next: secondPromise
+        });
+      });
+      testChainedPromise.map(addOneFunction).map(doubleFunction).forEach((v) => {
+        dataCollected.push(v.data);
+      }).catch((err) => console.error(err.stack, err));
+    });
+  });
   describe("then", function () {
     it("bypasses composition when registering reject handler only", function (done) {
       const testChainedPromise = new ChainedPromise((resolver) => {

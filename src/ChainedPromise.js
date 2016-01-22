@@ -149,6 +149,26 @@ class ChainedPromise extends Promise {
       return flatMapped.then(onFulfilled, onRejected);
     }
   }
+
+  /**
+   * Flat-maps current promise chain to resolve into successive accumulation of values, from given
+   * accumulator. Accumulator should pass on next promise to the accumulated value.
+   * @param {function(U, T): (Promise.<U>)} fn Accumulator that takes previous accumulation and
+   * current value, and calculate next accumulation.
+   * @param {U} initial Initial accumulated value to start with.
+   * @returns {ChainedPromise.<U>}
+   * @template T
+   * @template U
+   */
+  accumulate(fn, initial) {
+    let accumulated = initial;
+    this.flatMap((v) => fn(accumulated, v))
+      .flatMap((acc) => {
+        accumulated = acc;
+        return acc;
+      });
+    return this;
+  }
 }
 
 export default ChainedPromise;

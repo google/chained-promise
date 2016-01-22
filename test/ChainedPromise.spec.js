@@ -101,4 +101,37 @@ describe("ChainedPromise", function () {
       });
     });
   });
+  describe("accumulate", function () {
+    it("should accumulate values", function (done) {
+      const dataCollected = [];
+      const thirdPromise = Promise.resolve({
+        data: 3,
+        next: {
+          then: (resolver) => {
+            if (!resolver) {
+              // Skip catch call.
+              return;
+            }
+            dataCollected.should.eql([1, 3, 6]);
+            done();
+          }
+        }
+      });
+      const secondPromise = Promise.resolve({
+        data: 2,
+        next: thirdPromise
+      });
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: 1,
+          next: secondPromise
+        });
+      });
+      testChainedPromise.accumulate((prevSum, newValue) => {
+        return Promise.resolve(Object.assign(newValue, {data: prevSum.data + newValue.data}));
+      }, {data: 0}).forEach((v) => {
+        dataCollected.push(v.data);
+      }).catch((err) => console.error(err.stack, err));
+    });
+  });
 });

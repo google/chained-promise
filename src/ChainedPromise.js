@@ -102,6 +102,38 @@ class ChainedPromise extends Promise {
   }
 
   /**
+   * Creates `[ChainedPromise, callback, error]` array.
+   *
+   * Calling callback with a value `v` will cause the promise to be resolved into
+   * `{data: v, next: nextPromise}`, `nextPromise` being another {@link ChainedPromise} who gets
+   * resolved next time `callback` is called.
+   *
+   * Calling `error` function will cause the promise to be rejected.
+   * @returns {[ChainedPromise.<{data: T}>, function(T), function(Error)]}
+   * @template T
+   */
+  static createPromiseCallbackPair() {
+    let resolver;
+    let rejecter;
+    const callback = (v) => {
+      const oldResolver = resolver;
+      const nextPromise = new ChainedPromise((resolve, reject) => {
+        resolver = resolve;
+        rejecter = reject;
+      });
+      oldResolver({data: v, next: nextPromise});
+    };
+    const error = (err) => {
+      rejecter(err);
+    };
+    const promise = new ChainedPromise((resolve, reject) => {
+      resolver = resolve;
+      rejecter = reject;
+    });
+    return [promise, callback, error];
+  }
+
+  /**
    * @param {function(T)} fn
    * @returns {Promise}
    * @template T
@@ -157,7 +189,7 @@ class ChainedPromise extends Promise {
       return super.then(onFulfilled, onRejected);
     } else {
       const firstFlatMapped = super.then(this.flatMapChain[0]);
-      const flatMapped = this.flatMapChain.slice(1).reduce((x,y) => x.then(y), firstFlatMapped);
+      const flatMapped = this.flatMapChain.slice(1).reduce((x, y) => x.then(y), firstFlatMapped);
       return flatMapped.then(onFulfilled, onRejected);
     }
   }

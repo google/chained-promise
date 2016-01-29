@@ -20,6 +20,36 @@ import ChainedPromise from "../src/index";
 chai.should();
 
 describe("ChainedPromise", function () {
+  describe("createPromiseCallbackPair", function () {
+    it("creates ChainedPromise and callback functions", function (done) {
+      const dataCollected = [];
+      const [promise, callback] = ChainedPromise.createPromiseCallbackPair();
+      callback(1);
+      callback(2);
+      callback(3);
+      promise.forEach((v) => {
+        dataCollected.push(v.data);
+        if (dataCollected.length === 3) {
+          dataCollected.should.eql([1, 2, 3]);
+          done();
+        }
+      }).catch((err) => console.error(err.stack, err));
+    });
+  });
+  it("creates error function which rejectes the promise", function (done) {
+    const dataCollected = [];
+    const [promise, callback, error] = ChainedPromise.createPromiseCallbackPair();
+    callback(1);
+    callback(2);
+    error("Error!");
+    promise.forEach(({data}) => {
+      dataCollected.push(data);
+    }).catch((err) => {
+      dataCollected.should.eql([1, 2]);
+      err.should.eql("Error!");
+      done();
+    });
+  });
   describe("forEach", function () {
     it("runs function on each value", function (done) {
       const dataCollected = [];
@@ -50,6 +80,25 @@ describe("ChainedPromise", function () {
         dataCollected.push(v.data);
       }).catch((err) => console.error(err.stack, err));
     });
+  });
+  it("bubbles up error", function (done) {
+    const dataCollected = [];
+    const testChainedPromise = ChainedPromise.from(Promise.resolve({
+      data: 1,
+      next: Promise.resolve({
+        data: 2,
+        next: Promise.reject("Error!")
+      })
+    }));
+    testChainedPromise
+      .forEach(({data}) => {
+        dataCollected.push(data);
+      })
+      .catch((err) => {
+        dataCollected.should.eql([1, 2]);
+        err.should.eql("Error!");
+        done();
+      });
   });
   describe("flatMap", function () {
     it("composes flat map functions", function (done) {

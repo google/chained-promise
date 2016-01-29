@@ -109,7 +109,7 @@ class ChainedPromise extends Promise {
    * resolved next time `callback` is called.
    *
    * Calling `error` function will cause the promise to be rejected.
-   * @returns {[ChainedPromise.<{data: T}>, function(T), function(Error)]}
+   * @returns {Array}
    * @template T
    */
   static createPromiseCallbackPair() {
@@ -159,7 +159,7 @@ class ChainedPromise extends Promise {
   }
 
   /**
-   * Non-async equivalent of {@link #flatMap}.
+   * Non-async equivalent of {@link ChainedPromise#flatMap}.
    * @param {function(T) : U} fn
    * @returns {ChainedPromise.<U>}
    * @template T

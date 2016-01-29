@@ -1,0 +1,15 @@
+{
+  "tags": {
+    "allowUnknownTags": true
+  },
+  "source": {
+    "include": ["src", "README.md"],
+    "includePattern": ".js$"
+  },
+  "opts": {
+    "destination": "./docs/gen",
+    "template": "./node_modules/minami",
+    "recursive": true
+  },
+  "plugins": ["plugins/markdown"]
+}

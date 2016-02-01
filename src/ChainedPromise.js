@@ -84,11 +84,7 @@ class ChainedPromise extends Promise {
    * @template T
    */
   static from(innerPromise, next = ChainedPromise.nextFieldPicker("next")) {
-    Object.setPrototypeOf(innerPromise, ChainedPromise.prototype);
-    innerPromise.next = next;
-    innerPromise._initialize();
-
-    return innerPromise;
+    return new ChainedPromise((res, rej) => innerPromise.then(res, rej), next);
   }
 
   /**
@@ -134,14 +130,21 @@ class ChainedPromise extends Promise {
   }
 
   /**
+   * Applies the given function on all values in the chain, until the {@link ChainedPromise#next}
+   * value returns an object with {@link ChainedPromise.DONE} symbol.
    * @param {function(T)} fn
-   * @returns {Promise}
+   * @returns {Promise} Promise to the final value decorated with {@link ChainedPromise.DONE}.
    * @template T
    */
   forEach(fn) {
-    return fix((v) => {
+    return fix((v, complete) => {
       fn(v);
-      return this._nextPromise(v);
+      const nextPromise = this.next(v);
+      if (nextPromise[ChainedPromise.DONE] !== undefined) {
+        complete(nextPromise[ChainedPromise.DONE]);
+      } else {
+        return this._nextPromise(v);
+      }
     })(this);
   }
 
@@ -215,4 +218,11 @@ class ChainedPromise extends Promise {
   }
 }
 
+/**
+ * Symbol to indicate the end of promise chains. Having `{[ChainedPromise.DONE]: <some value>}`
+ * as a next value will indicate the end of the chain, and will cause fixed promises such as
+ * {@link ChainedPromise#forEach} to resolve to the given value.
+ * @type {Symbol}
+ */
+ChainedPromise.DONE = Symbol("ChainedPromise.DONE");
 export default ChainedPromise;

@@ -84,11 +84,7 @@ class ChainedPromise extends Promise {
    * @template T
    */
   static from(innerPromise, next = ChainedPromise.nextFieldPicker("next")) {
-    Object.setPrototypeOf(innerPromise, ChainedPromise.prototype);
-    innerPromise.next = next;
-    innerPromise._initialize();
-
-    return innerPromise;
+    return new ChainedPromise((res, rej) => innerPromise.then(res, rej), next);
   }
 
   /**
@@ -102,14 +98,53 @@ class ChainedPromise extends Promise {
   }
 
   /**
+   * Creates `[ChainedPromise, callback, error]` array.
+   *
+   * Calling callback with a value `v` will cause the promise to be resolved into
+   * `{data: v, next: nextPromise}`, `nextPromise` being another {@link ChainedPromise} who gets
+   * resolved next time `callback` is called.
+   *
+   * Calling `error` function will cause the promise to be rejected.
+   * @returns {Array}
+   * @template T
+   */
+  static createPromiseCallbackPair() {
+    let resolver;
+    let rejecter;
+    const callback = (v) => {
+      const oldResolver = resolver;
+      const nextPromise = new ChainedPromise((resolve, reject) => {
+        resolver = resolve;
+        rejecter = reject;
+      });
+      oldResolver({data: v, next: nextPromise});
+    };
+    const error = (err) => {
+      rejecter(err);
+    };
+    const promise = new ChainedPromise((resolve, reject) => {
+      resolver = resolve;
+      rejecter = reject;
+    });
+    return [promise, callback, error];
+  }
+
+  /**
+   * Applies the given function on all values in the chain, until the {@link ChainedPromise#next}
+   * value returns an object with {@link ChainedPromise.DONE} symbol.
    * @param {function(T)} fn
-   * @returns {Promise}
+   * @returns {Promise} Promise to the final value decorated with {@link ChainedPromise.DONE}.
    * @template T
    */
   forEach(fn) {
-    return fix((v) => {
+    return fix((v, complete) => {
       fn(v);
-      return this._nextPromise(v);
+      const nextPromise = this.next(v);
+      if (nextPromise[ChainedPromise.DONE] !== undefined) {
+        complete(nextPromise[ChainedPromise.DONE]);
+      } else {
+        return this._nextPromise(v);
+      }
     })(this);
   }
 
@@ -127,7 +162,7 @@ class ChainedPromise extends Promise {
   }
 
   /**
-   * Non-async equivalent of {@link #flatMap}.
+   * Non-async equivalent of {@link ChainedPromise#flatMap}.
    * @param {function(T) : U} fn
    * @returns {ChainedPromise.<U>}
    * @template T
@@ -157,7 +192,7 @@ class ChainedPromise extends Promise {
       return super.then(onFulfilled, onRejected);
     } else {
       const firstFlatMapped = super.then(this.flatMapChain[0]);
-      const flatMapped = this.flatMapChain.slice(1).reduce((x,y) => x.then(y), firstFlatMapped);
+      const flatMapped = this.flatMapChain.slice(1).reduce((x, y) => x.then(y), firstFlatMapped);
       return flatMapped.then(onFulfilled, onRejected);
     }
   }
@@ -183,4 +218,11 @@ class ChainedPromise extends Promise {
   }
 }
 
+/**
+ * Symbol to indicate the end of promise chains. Having `{[ChainedPromise.DONE]: <some value>}`
+ * as a next value will indicate the end of the chain, and will cause fixed promises such as
+ * {@link ChainedPromise#forEach} to resolve to the given value.
+ * @type {Symbol}
+ */
+ChainedPromise.DONE = Symbol("ChainedPromise.DONE");
 export default ChainedPromise;

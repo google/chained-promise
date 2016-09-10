@@ -1,6 +1,6 @@
 {
   "name": "chained-promise",
-  "version": "0.0.1",
+  "version": "0.0.5",
   "description": "Functional programming tools for recurring promises",
   "main": "dist/index.js",
   "repository": {
@@ -18,7 +18,8 @@
     "test": "gulp test",
     "coveralls": "gulp coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "travis": "gulp",
-    "posttravis": "npm run-script coveralls"
+    "posttravis": "npm run-script coveralls",
+    "doc": "./node_modules/jsdoc/jsdoc.js -c ./jsdocConfig.json"
   },
   "authors": [
     "In-Ho Yi <yiinho@google.com>"
@@ -40,6 +41,8 @@
     "gulp-mocha": "^2.2.0",
     "gulp-sourcemaps": "^1.6.0",
     "isparta": "^4.0.0",
+    "jsdoc": "^3.4.0",
+    "minami": "git+https://github.com/chajath/minami.git",
     "mocha-babel": "^3.0.0"
   },
   "dependencies": {}

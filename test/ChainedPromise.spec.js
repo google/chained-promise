@@ -20,21 +20,42 @@ import ChainedPromise from "../src/index";
 chai.should();
 
 describe("ChainedPromise", function () {
+  describe("createPromiseCallbackPair", function () {
+    it("creates ChainedPromise and callback functions", function (done) {
+      const dataCollected = [];
+      const [promise, callback] = ChainedPromise.createPromiseCallbackPair();
+      callback(1);
+      callback(2);
+      callback(3);
+      promise.forEach((v) => {
+        dataCollected.push(v.data);
+        if (dataCollected.length === 3) {
+          dataCollected.should.eql([1, 2, 3]);
+          done();
+        }
+      }).catch((err) => console.error(err.stack, err));
+    });
+  });
+  it("creates error function which rejects the promise", function (done) {
+    const dataCollected = [];
+    const [promise, callback, error] = ChainedPromise.createPromiseCallbackPair();
+    callback(1);
+    callback(2);
+    error("Error!");
+    promise.forEach(({data}) => {
+      dataCollected.push(data);
+    }).catch((err) => {
+      dataCollected.should.eql([1, 2]);
+      err.should.eql("Error!");
+      done();
+    });
+  });
   describe("forEach", function () {
     it("runs function on each value", function (done) {
       const dataCollected = [];
       const thirdPromise = Promise.resolve({
         data: 3,
-        next: {
-          then: (resolver) => {
-            if (!resolver) {
-              // Skip catch call.
-              return;
-            }
-            dataCollected.should.eql([1, 2, 3]);
-            done();
-          }
-        }
+        next: {[ChainedPromise.DONE]: "done"}
       });
       const secondPromise = Promise.resolve({
         data: 2,
@@ -48,8 +69,31 @@ describe("ChainedPromise", function () {
       });
       testChainedPromise.forEach((v) => {
         dataCollected.push(v.data);
+      }).then((v) => {
+        v.should.eql("done");
+        dataCollected.should.eql([1, 2, 3]);
+        done();
       }).catch((err) => console.error(err.stack, err));
     });
+  });
+  it("bubbles up error", function (done) {
+    const dataCollected = [];
+    const testChainedPromise = ChainedPromise.from(Promise.resolve({
+      data: 1,
+      next: Promise.resolve({
+        data: 2,
+        next: Promise.reject("Error!")
+      })
+    }));
+    testChainedPromise
+      .forEach(({data}) => {
+        dataCollected.push(data);
+      })
+      .catch((err) => {
+        dataCollected.should.eql([1, 2]);
+        err.should.eql("Error!");
+        done();
+      });
   });
   describe("flatMap", function () {
     it("composes flat map functions", function (done) {
@@ -62,16 +106,7 @@ describe("ChainedPromise", function () {
       const dataCollected = [];
       const thirdPromise = Promise.resolve({
         data: 3,
-        next: {
-          then: (resolver) => {
-            if (!resolver) {
-              // Skip catch call.
-              return;
-            }
-            dataCollected.should.eql([4, 6, 8]);
-            done();
-          }
-        }
+        next: {[ChainedPromise.DONE]: "done"}
       });
       const secondPromise = Promise.resolve({
         data: 2,
@@ -85,6 +120,10 @@ describe("ChainedPromise", function () {
       });
       testChainedPromise.flatMap(addOnePromise).flatMap(doublePromise).forEach((v) => {
         dataCollected.push(v.data);
+      }).then((v) => {
+        v.should.eql("done");
+        dataCollected.should.eql([4, 6, 8]);
+        done();
       }).catch((err) => console.error(err.stack, err));
     });
   });
@@ -95,16 +134,7 @@ describe("ChainedPromise", function () {
       const dataCollected = [];
       const thirdPromise = Promise.resolve({
         data: 3,
-        next: {
-          then: (resolver) => {
-            if (!resolver) {
-              // Skip catch call.
-              return;
-            }
-            dataCollected.should.eql([4, 6, 8]);
-            done();
-          }
-        }
+        next: {[ChainedPromise.DONE]: "done"}
       });
       const secondPromise = Promise.resolve({
         data: 2,
@@ -118,6 +148,10 @@ describe("ChainedPromise", function () {
       });
       testChainedPromise.map(addOneFunction).map(doubleFunction).forEach((v) => {
         dataCollected.push(v.data);
+      }).then((v) => {
+        v.should.eql("done");
+        dataCollected.should.eql([4, 6, 8]);
+        done();
       }).catch((err) => console.error(err.stack, err));
     });
   });
@@ -139,16 +173,7 @@ describe("ChainedPromise", function () {
       const dataCollected = [];
       const thirdPromise = Promise.resolve({
         data: 3,
-        next: {
-          then: (resolver) => {
-            if (!resolver) {
-              // Skip catch call.
-              return;
-            }
-            dataCollected.should.eql([1, 3, 6]);
-            done();
-          }
-        }
+        next: {[ChainedPromise.DONE]: "done"}
       });
       const secondPromise = Promise.resolve({
         data: 2,
@@ -164,6 +189,10 @@ describe("ChainedPromise", function () {
         return Promise.resolve(Object.assign(newValue, {data: prevSum.data + newValue.data}));
       }, {data: 0}).forEach((v) => {
         dataCollected.push(v.data);
+      }).then((v) => {
+        v.should.eql("done");
+        dataCollected.should.eql([1, 3, 6]);
+        done();
       }).catch((err) => console.error(err.stack, err));
     });
   });

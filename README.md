@@ -6,7 +6,59 @@ We often find recurring patterns when handling asynchronous logic with promises,
 
 `Chained Promise` provides an extended Promise class that you can use to easily abstract out recurring patterns. See jsdocs for more detailed explanations.
 
-TODO: more illustrious examples to come in future release.
+## Example
+
+Suppose we are querying Wikipedia API to get the list of all linked pages from "Plato" page:
+ 
+```javascript
+const apiPoint = "https://en.wikipedia.org/w/api.php?" +
+  "action=query&prop=links&format=json&plnamespace=0&titles=Plato&pllimit=500";
+```
+
+With `request-promise` we can turn the end point into a promise. Then we can use `ChainedPromise` to extend the promise:
+
+```javascript
+import ChainedPromise from "chained-promise";
+import rq from "request-promise";
+
+ChainedPromise.from(rq(apiPoint))
+```
+
+First thing we want to do is to parse the resulting JSON:
+
+```javascript
+  .map(JSON.parse)
+```
+
+Now we have a promise that resolves into a JS object. Next we need to map the result into the format that `ChainedPromise` is expecting.
+ 
+```javascript
+  .map((v) => {
+    return {
+      data: v.query.pages,
+      next: v.continue ? rq(apiPoint + "&plcontinue=" + v.continue.plcontinue) :
+      {[ChainedPromise.DONE]: "done fetching links from Plato page"}
+    };
+  })
+```
+
+The `data` field contains the material content of the value, while the `next` field contains either the promise to the next batch of data, or `{[ChainedPromise.DONE]: lastNode}` which `ChainedPromise` recognizes to be the terminal node.
+
+Now that the chaining of the value has been configured, we can work on the series of data.
+
+```javascript
+  .forEach((v) => {
+    Object.keys(v.data).forEach((pageId) => {
+      v.data[pageId].links.forEach((link) => {
+        console.log(link.title);
+      });
+    });
+  })
+```
+
+This executes the given callback function, and the result itself is a promise that resolves into the value of the terminal node when it reaches the end.
+ 
+See [the example project](examples/wikipedia-list-links) for the full example code. Also see jsdoc to [ChainedPromise.js](src/ChainedPromise.js) for more explanation of other functions such as `flatMap`.
 
 ## Usage Note
 

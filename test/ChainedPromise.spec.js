@@ -196,4 +196,74 @@ describe("ChainedPromise", function () {
       }).catch((err) => console.error(err.stack, err));
     });
   });
+  describe("join", function () {
+    it("should extract field", function (done) {
+      const dataCollected = [];
+      const secondPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: {
+            name: "Test Person 2",
+            ref: 43
+          },
+          next: {[ChainedPromise.DONE]: "done"}
+        });
+      });
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: {
+            name: "Test Person",
+            ref: 42
+          },
+          next: secondPromise
+        });
+      });
+      testChainedPromise.join({
+        data: {ref: (v) => new Promise((res) => res("Reference " + v))}
+      }).forEach((v) => {
+        dataCollected.push(v.data);
+      }).then((v) => {
+        v.should.eql("done");
+        dataCollected.should.eql([
+          {name: "Test Person", ref: "Reference 42"},
+          {name: "Test Person 2", ref: "Reference 43"}
+        ]);
+        done();
+      }).catch((err) => console.error(err.stack, err));
+    });
+  });
+  describe("join", function () {
+    it("should map array of values", function (done) {
+      const dataCollected = [];
+      const secondPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: {
+            name: "Test Person 2",
+            ref: [44, 45]
+          },
+          next: {[ChainedPromise.DONE]: "done"}
+        });
+      });
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: {
+            name: "Test Person",
+            ref: [42, 43]
+          },
+          next: secondPromise
+        });
+      });
+      testChainedPromise.join({
+        data: {ref: [(v) => new Promise((res) => res("Reference " + v))]}
+      }).forEach((v) => {
+        dataCollected.push(v.data);
+      }).then((v) => {
+        v.should.eql("done");
+        dataCollected.should.eql([
+          {name: "Test Person", ref: ["Reference 42", "Reference 43"]},
+          {name: "Test Person 2", ref: ["Reference 44", "Reference 45"]}
+        ]);
+        done();
+      }).catch((err) => console.error(err.stack, err));
+    });
+  });
 });

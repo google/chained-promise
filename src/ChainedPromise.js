@@ -216,6 +216,19 @@ class ChainedPromise extends Promise {
       });
     return this;
   }
+
+  // TODO(yiinho): Implement .join() api.
+  join() {
+    this.map((v) => {
+      if (v.data.ref instanceof Array) {
+        v.data.ref = v.data.ref.map((x) => "Reference " + x);
+      } else {
+        v.data.ref = "Reference " + v.data.ref;
+      }
+      return v;
+    });
+    return this;
+  }
 }
 
 /**

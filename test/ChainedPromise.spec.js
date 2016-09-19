@@ -299,5 +299,23 @@ describe("ChainedPromise", function () {
         done();
       }).catch((err) => console.error(err.stack, err));
     });
+    it("should throw when the given spec is illegal", function (done) {
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: {
+            name: "Test Person",
+            ref: 42
+          },
+          next: {[ChainedPromise.DONE]: "done"}
+        });
+      });
+      testChainedPromise.join({
+        data: {name: "hello"}
+      }).then((v) => {
+        done(v);
+      }).catch(() => {
+        done();
+      });
+    });
   });
 });

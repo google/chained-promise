@@ -230,8 +230,6 @@ describe("ChainedPromise", function () {
         done();
       }).catch((err) => console.error(err.stack, err));
     });
-  });
-  describe("join", function () {
     it("should map array of values", function (done) {
       const dataCollected = [];
       const secondPromise = new ChainedPromise((resolver) => {
@@ -262,6 +260,42 @@ describe("ChainedPromise", function () {
           {name: "Test Person", ref: ["Reference 42", "Reference 43"]},
           {name: "Test Person 2", ref: ["Reference 44", "Reference 45"]}
         ]);
+        done();
+      }).catch((err) => console.error(err.stack, err));
+    });
+    it("should support object specification inside an array", function (done) {
+      const dataCollected = [];
+      const secondPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: {
+            name: "Test Person 2",
+            refs: [{book: 44}, {book: 45}]
+          },
+          next: {[ChainedPromise.DONE]: "done"}
+        });
+      });
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: {
+            name: "Test Person",
+            refs: [{book: 42}, {book: 43}]
+          },
+          next: secondPromise
+        });
+      });
+      testChainedPromise.join({
+        data: {refs: [{book: (v) => new Promise((res) => res("Reference " + v))}]}
+      }).forEach((v) => {
+        dataCollected.push(v.data);
+      }).then((v) => {
+        v.should.eql("done");
+        dataCollected.should.eql([{
+          name: "Test Person",
+          refs: [{book: "Reference 42"}, {book: "Reference 43"}]
+        }, {
+          name: "Test Person 2",
+          refs: [{book: "Reference 44"}, {book: "Reference 45"}]
+        }]);
         done();
       }).catch((err) => console.error(err.stack, err));
     });

@@ -219,8 +219,8 @@ class ChainedPromise extends Promise {
 
   /**
    * Collects results (including the final "done" value) into an array.
-   * @param {function(T) : U} fn Optional mapper function to be applied to each data points
-   * (except the final "done" value) before collecting into the result array.
+   * @param {(function(T) : U)=} fn Mapper function to be applied to each data points (except
+   * the final "done" value) before collecting into the result array.
    * @returns {Promise.<Array.<U | V>>}
    * @template T
    * @template U

@@ -227,8 +227,8 @@ class ChainedPromise extends Promise {
    *   * If the spec is an array of a spec, then the current value is assumed to be an array, and
    *   each element in the current value is mapped to the inner spec.
    *
-   *   * If the spec is an object with a single key to a spec, then the field of the current value
-   *   with the key is replaced with the result of the join operation with the inner spec.
+   *   * If the spec is an object with keys to specs, then the field of the current value
+   *   with each key is replaced with the result of each join operations with the inner spec.
    * @param {(function(T): (Promise.<U>) | Array | Object)} spec
    * @returns {ChainedPromise.<V>}
    * @template T
@@ -246,12 +246,17 @@ class ChainedPromise extends Promise {
           return Promise.all(curValue.map((x) => pickAndJoin(curSpec[0], x)));
         }
         if (curSpec instanceof Object) {
-          const key = Object.keys(curSpec)[0];
-          // TODO(yiinho): Handle multiple joins.
-          return pickAndJoin(curSpec[key], curValue[key]).then((joinResult) => {
-            curValue[key] = joinResult;
-            return curValue;
-          });
+          return Promise.all(Object.keys(curSpec)
+              .map((key) => pickAndJoin(curSpec[key], curValue[key])
+                  .then((joinResult) => {
+                    const result = {};
+                    result[key] = joinResult;
+                    return result;
+                  })))
+              .then((joinedValues) => {
+                joinedValues.forEach((join) => Object.assign(curValue, join));
+                return curValue;
+              });
         }
         throw new TypeError("Specification not recognized: " + JSON.stringify(spec));
       }

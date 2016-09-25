@@ -33,7 +33,7 @@ describe("ChainedPromise", function () {
           dataCollected.should.eql([1, 2, 3]);
           done();
         }
-      }).catch((err) => console.error(err.stack, err));
+      }).catch(done);
     });
   });
   it("creates error function which rejects the promise", function (done) {
@@ -73,7 +73,7 @@ describe("ChainedPromise", function () {
         v.should.eql("done");
         dataCollected.should.eql([1, 2, 3]);
         done();
-      }).catch((err) => console.error(err.stack, err));
+      }).catch(done);
     });
   });
   it("bubbles up error", function (done) {
@@ -124,7 +124,7 @@ describe("ChainedPromise", function () {
         v.should.eql("done");
         dataCollected.should.eql([4, 6, 8]);
         done();
-      }).catch((err) => console.error(err.stack, err));
+      }).catch(done);
     });
   });
   describe("map", function () {
@@ -152,7 +152,7 @@ describe("ChainedPromise", function () {
         v.should.eql("done");
         dataCollected.should.eql([4, 6, 8]);
         done();
-      }).catch((err) => console.error(err.stack, err));
+      }).catch(done);
     });
   });
   describe("then", function () {
@@ -193,7 +193,7 @@ describe("ChainedPromise", function () {
         v.should.eql("done");
         dataCollected.should.eql([1, 3, 6]);
         done();
-      }).catch((err) => console.error(err.stack, err));
+      }).catch(done);
     });
   });
   describe("join", function () {
@@ -228,7 +228,44 @@ describe("ChainedPromise", function () {
           {name: "Test Person 2", ref: "Reference 43"}
         ]);
         done();
-      }).catch((err) => console.error(err.stack, err));
+      }).catch(done);
+    });
+    it("should support multiple fields", function (done) {
+      const dataCollected = [];
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: {
+            name: "Test Person",
+            book: {
+              ref: 42
+            },
+            car: {
+              ref: 43
+            }
+          },
+          next: {[ChainedPromise.DONE]: "done"}
+        });
+      });
+      testChainedPromise.join({
+        data: {
+          book: {
+            ref: (v) => new Promise((res) => res("Book reference " + v))
+          },
+          car: {
+            ref: (v) => new Promise((res) => res("Car reference " + v))
+          }
+        }
+      }).forEach((v) => {
+        dataCollected.push(v.data);
+      }).then((v) => {
+        v.should.eql("done");
+        dataCollected.should.eql([{
+          name: "Test Person",
+          book: {ref: "Book reference 42"},
+          car: {ref: "Car reference 43"}
+        }]);
+        done();
+      }).catch(done);
     });
     it("should map array of values", function (done) {
       const dataCollected = [];
@@ -261,7 +298,7 @@ describe("ChainedPromise", function () {
           {name: "Test Person 2", ref: ["Reference 44", "Reference 45"]}
         ]);
         done();
-      }).catch((err) => console.error(err.stack, err));
+      }).catch(done);
     });
     it("should support object specification inside an array", function (done) {
       const dataCollected = [];
@@ -297,7 +334,7 @@ describe("ChainedPromise", function () {
           refs: [{book: "Reference 44"}, {book: "Reference 45"}]
         }]);
         done();
-      }).catch((err) => console.error(err.stack, err));
+      }).catch(done);
     });
     it("should throw when the given spec is illegal", function (done) {
       const testChainedPromise = new ChainedPromise((resolver) => {

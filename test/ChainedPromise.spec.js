@@ -196,4 +196,52 @@ describe("ChainedPromise", function () {
       }).catch((err) => console.error(err.stack, err));
     });
   });
+  describe("collect", function () {
+    it("collects result in an array", function (done) {
+      const thirdPromise = Promise.resolve({
+        data: 3,
+        next: {[ChainedPromise.DONE]: "done"}
+      });
+      const secondPromise = Promise.resolve({
+        data: 2,
+        next: thirdPromise
+      });
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: 1,
+          next: secondPromise
+        });
+      });
+      testChainedPromise.collect()
+        .then((result) => {
+          result[0].data.should.eql(1);
+          result[1].data.should.eql(2);
+          result[2].data.should.eql(3);
+          result[3].should.eql("done");
+          result.length.should.eql(4);
+          done();
+        }).catch(done);
+    });
+    it("transforms data before collecting into an array", function (done) {
+      const thirdPromise = Promise.resolve({
+        data: 3,
+        next: {[ChainedPromise.DONE]: "done"}
+      });
+      const secondPromise = Promise.resolve({
+        data: 2,
+        next: thirdPromise
+      });
+      const testChainedPromise = new ChainedPromise((resolver) => {
+        resolver({
+          data: 1,
+          next: secondPromise
+        });
+      });
+      testChainedPromise.collect((v) => v.data)
+        .then((result) => {
+          result.should.eql([1, 2, 3, "done"]);
+          done();
+        }).catch(done);
+    });
+  });
 });

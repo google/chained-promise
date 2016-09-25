@@ -62,7 +62,7 @@ class ChainedPromise extends Promise {
 
   /**
    * @param {function(function, function)} executor Promise executor
-   * @param {function(T) : Promise.<T>} next
+   * @param {(function(T) : Promise.<T>)=} next
    * @template T
    */
   constructor(executor, next = ChainedPromise.nextFieldPicker("next")) {
@@ -79,7 +79,7 @@ class ChainedPromise extends Promise {
   /**
    * Creates a ChainedPromise that extends given Promise.
    * @param {Promise.<T>} innerPromise
-   * @param {function(T) : Promise.<T>} next
+   * @param {(function(T) : Promise.<T>)=} next
    * @returns {ChainedPromise.<T>}
    * @template T
    */

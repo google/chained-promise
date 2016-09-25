@@ -169,7 +169,7 @@ describe("ChainedPromise", function () {
     });
   });
   describe("accumulate", function () {
-    it("should accumulate values", function (done) {
+    it("accumulates values", function (done) {
       const dataCollected = [];
       const thirdPromise = Promise.resolve({
         data: 3,
@@ -197,7 +197,7 @@ describe("ChainedPromise", function () {
     });
   });
   describe("join", function () {
-    it("should extract field", function (done) {
+    it("extracts field", function (done) {
       const dataCollected = [];
       const secondPromise = new ChainedPromise((resolver) => {
         resolver({
@@ -230,7 +230,7 @@ describe("ChainedPromise", function () {
         done();
       }).catch(done);
     });
-    it("should support multiple fields", function (done) {
+    it("supports multiple fields", function (done) {
       const dataCollected = [];
       const testChainedPromise = new ChainedPromise((resolver) => {
         resolver({
@@ -267,7 +267,7 @@ describe("ChainedPromise", function () {
         done();
       }).catch(done);
     });
-    it("should map array of values", function (done) {
+    it("maps array of values", function (done) {
       const dataCollected = [];
       const secondPromise = new ChainedPromise((resolver) => {
         resolver({
@@ -300,7 +300,7 @@ describe("ChainedPromise", function () {
         done();
       }).catch(done);
     });
-    it("should support object specification inside an array", function (done) {
+    it("supports object specification inside an array", function (done) {
       const dataCollected = [];
       const secondPromise = new ChainedPromise((resolver) => {
         resolver({
@@ -336,7 +336,7 @@ describe("ChainedPromise", function () {
         done();
       }).catch(done);
     });
-    it("should throw when the given spec is illegal", function (done) {
+    it("throws when the given spec is illegal", function (done) {
       const testChainedPromise = new ChainedPromise((resolver) => {
         resolver({
           data: {

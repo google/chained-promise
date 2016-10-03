@@ -264,6 +264,25 @@ class ChainedPromise extends Promise {
     });
     return this;
   }
+
+  /**
+   * Collects results (including the final "done" value) into an array.
+   * @param {(function(T) : U)=} fn Mapper function to be applied to each data points (except
+   * the final "done" value) before collecting into the result array.
+   * @returns {Promise.<Array.<U | V>>}
+   * @template T
+   * @template U
+   * @template V
+   */
+  collect(fn = (x) => x) {
+    const collected = [];
+    return this.forEach((v) => {
+      collected.push(fn(v));
+    }).then((done) => {
+      collected.push(done);
+      return collected;
+    });
+  }
 }
 
 /**

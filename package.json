@@ -1,6 +1,6 @@
 {
   "name": "chained-promise",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "Functional programming tools for recurring promises",
   "main": "dist/index.js",
   "repository": {

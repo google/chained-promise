@@ -62,7 +62,7 @@ class ChainedPromise extends Promise {
 
   /**
    * @param {function(function, function)} executor Promise executor
-   * @param {function(T) : Promise.<T>} next
+   * @param {(function(T) : Promise.<T>)=} next
    * @template T
    */
   constructor(executor, next = ChainedPromise.nextFieldPicker("next")) {
@@ -79,7 +79,7 @@ class ChainedPromise extends Promise {
   /**
    * Creates a ChainedPromise that extends given Promise.
    * @param {Promise.<T>} innerPromise
-   * @param {function(T) : Promise.<T>} next
+   * @param {(function(T) : Promise.<T>)=} next
    * @returns {ChainedPromise.<T>}
    * @template T
    */
@@ -214,6 +214,54 @@ class ChainedPromise extends Promise {
         accumulated = acc;
         return acc;
       });
+    return this;
+  }
+
+  /**
+   * Takes a join spec and flatMaps current ChainedPromise accordingly. A join spec is
+   * recursively defined as follows:
+   *
+   *   * If the spec is a function taking a value and returning a promise, then the join operation
+   *   evaluates the function with current value and replaces the value with the resulting promise.
+   *
+   *   * If the spec is an array of a spec, then the current value is assumed to be an array, and
+   *   each element in the current value is mapped to the inner spec.
+   *
+   *   * If the spec is an object with keys to specs, then the field of the current value
+   *   with each key is replaced with the result of each join operations with the inner spec.
+   * @param {(function(T): (Promise.<U>) | Array | Object)} spec
+   * @returns {ChainedPromise.<V>}
+   * @template T
+   * @template U
+   * @template V
+   */
+  join(spec) {
+    this.flatMap((v) => {
+      function pickAndJoin(curSpec, curValue) {
+        if (typeof curSpec === "function") {
+          return curSpec(curValue);
+        }
+        if (curSpec instanceof Array) {
+          // TODO(yiinho): more thorough error handling.
+          return Promise.all(curValue.map((x) => pickAndJoin(curSpec[0], x)));
+        }
+        if (curSpec instanceof Object) {
+          return Promise.all(Object.keys(curSpec)
+              .map((key) => pickAndJoin(curSpec[key], curValue[key])
+                  .then((joinResult) => {
+                    const result = {};
+                    result[key] = joinResult;
+                    return result;
+                  })))
+              .then((joinedValues) => {
+                joinedValues.forEach((join) => Object.assign(curValue, join));
+                return curValue;
+              });
+        }
+        throw new TypeError("Specification not recognized: " + JSON.stringify(spec));
+      }
+      return pickAndJoin(spec, v);
+    });
     return this;
   }
 

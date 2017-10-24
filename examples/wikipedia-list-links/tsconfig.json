@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "es6",
+    "module": "commonjs",
+    "sourceMap": true,
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "rootDirs": [
+      "./src"
+    ],
+    "baseUrl": "./",
+    "paths": {
+      "src": [
+        "src/"
+      ]
+    },
+    /* Strict Type-Checking Options */
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    /* Additional Checks */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

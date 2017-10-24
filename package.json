@@ -18,7 +18,7 @@
     "test": "jest",
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "travis": "jest",
-    "posttravis": "npm run-script coveralls",
+    "posttravis": "yarn coveralls",
     "doc": "./node_modules/jsdoc/jsdoc.js -c ./jsdocConfig.json"
   },
   "authors": [

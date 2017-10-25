@@ -187,8 +187,8 @@ describe('ChainedPromise', function() {
   describe('join', function() {
     it('extracts field', function(done) {
       type raw = {name: string, ref: number};
-      type joined = {name: string,
-                     ref: string} const dataCollected: Array<joined> = [];
+      type joined = {name: string, ref: string};
+      const dataCollected: Array<joined> = [];
       const secondPromise = new ChainedPromise<{data: raw}>((resolver) => {
         resolver({
           data: {name: 'Test Person 2', ref: 43},

@@ -1,15 +1,18 @@
 {
   "name": "wikipedia-list-links",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "ChainedPromise example to list links from wikipedia page",
   "main": "dist/index.js",
   "scripts": {
-    "start": "gulp dist && node dist/index.js"
+    "start": "tsc && node dist/index.js"
   },
   "dependencies": {
-    "babel-polyfill": "^6.3.14",
     "chained-promise": "../../.",
-    "request": "^2.69.0",
-    "request-promise": "^2.0.0"
-  }
+    "node-fetch": "^1.7.3"
+  },
+  "devDependencies": {
+    "@types/node-fetch": "^1.6.7",
+    "typescript": "^2.5.3"
+  },
+  "license": "Apache-2.0"
 }

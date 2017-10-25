@@ -7,7 +7,6 @@
     "start": "tsc && node dist/index.js"
   },
   "dependencies": {
-    "babel-polyfill": "^6.26.0",
     "chained-promise": "../../.",
     "node-fetch": "^1.7.3"
   },

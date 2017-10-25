@@ -9,35 +9,35 @@ We often find recurring patterns when handling asynchronous logic with promises,
 ## Example
 
 Suppose we are querying Wikipedia API to get the list of all linked pages from "Plato" page:
- 
+
 ```javascript
 const apiPoint = "https://en.wikipedia.org/w/api.php?" +
   "action=query&prop=links&format=json&plnamespace=0&titles=Plato&pllimit=500";
 ```
 
-With `request-promise` we can turn the end point into a promise. Then we can use `ChainedPromise` to extend the promise:
+With `fetch` we can turn the end point into a promise. Then we can use `ChainedPromise` to extend the promise:
 
 ```javascript
 import ChainedPromise from "chained-promise";
-import rq from "request-promise";
 
-ChainedPromise.from(rq(apiPoint))
+ChainedPromise.from(fetch(apiPoint))
 ```
 
 First thing we want to do is to parse the resulting JSON:
 
 ```javascript
-  .map(JSON.parse)
+  .flatMap((res) => res.json())
 ```
 
 Now we have a promise that resolves into a JS object. Next we need to map the result into the format that `ChainedPromise` is expecting.
- 
+
 ```javascript
   .map((v) => {
     return {
       data: v.query.pages,
-      next: v.continue ? rq(apiPoint + "&plcontinue=" + v.continue.plcontinue) :
-      {[ChainedPromise.DONE]: "done fetching links from Plato page"}
+      next: v.continue ?
+          fetch(apiPoint + '&plcontinue=' + encodeURIComponent(v.continue.plcontinue)) :
+          {[ChainedPromise.DONE]: 'done fetching links from Plato page'}
     };
   })
 ```
@@ -57,11 +57,7 @@ Now that the chaining of the value has been configured, we can work on the serie
 ```
 
 This executes the given callback function, and the result itself is a promise that resolves into the value of the terminal node when it reaches the end.
- 
+
 See [the example project](examples/wikipedia-list-links) for the full example code. Also see jsdoc to [ChainedPromise.js](src/ChainedPromise.js) for more explanation of other functions such as `flatMap`.
-
-## Usage Note
-
-ChainedPromise extends Promise class, which is permitted by ES6 specification. However, most modern JS engines (including NodeJS) do not yet support this. Fortunately, most Promise polyfills and ES6 shims (es6-promise, rsvp, Babel polyfill) all support extending Promise. Users are advised to require a shim / polyfill of choice when using this library.
 
 Disclaimer: This is not an official Google product.

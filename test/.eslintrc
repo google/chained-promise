@@ -1,6 +1,0 @@
-{
-  "rules": {
-    // Relax prefer-arrow-callback since chai recommends unbound function.
-    "prefer-arrow-callback": 0
-  }
-}

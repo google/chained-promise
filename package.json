@@ -8,7 +8,7 @@
     "url": "https://github.com/google/chained-promise.git"
   },
   "files": [
-    "dist/*",
+    "dist/src/*",
     "src/*",
     "README.md",
     "LICENSE"

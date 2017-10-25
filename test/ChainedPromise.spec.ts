@@ -32,7 +32,7 @@ describe('ChainedPromise', function() {
               done();
             }
           })
-          .catch((err) => console.error(err.stack, err));
+          .catch(done);
     });
   });
   it('creates error function which rejectes the promise', function(done) {
@@ -99,19 +99,8 @@ describe('ChainedPromise', function() {
         return Promise.resolve(Object.assign(v, {data: v.data * 2}));
       };
       const dataCollected: Array<number> = [];
-      const thirdPromise = Promise.resolve({
-        data: 3,
-        next: {
-          then: (resolver) => {
-            if (!resolver) {
-              // Skip catch call.
-              return;
-            }
-            expect(dataCollected).toEqual([4, 6, 8]);
-            done();
-          }
-        }
-      });
+      const thirdPromise =
+          Promise.resolve({data: 3, next: {[ChainedPromise.DONE]: 'done'}});
       const secondPromise = Promise.resolve({data: 2, next: thirdPromise});
       const testChainedPromise = new ChainedPromise((resolver) => {
         resolver({data: 1, next: secondPromise});
@@ -121,7 +110,12 @@ describe('ChainedPromise', function() {
           .forEach((v) => {
             dataCollected.push(v.data);
           })
-          .catch((err) => console.error(err.stack, err));
+          .then((v) => {
+            expect(v).toEqual('done');
+            expect(dataCollected).toEqual([4, 6, 8]);
+            done();
+          })
+          .catch(done);
     });
   });
   describe('map', function() {
@@ -129,19 +123,8 @@ describe('ChainedPromise', function() {
       const addOneFunction = (v) => Object.assign(v, {data: v.data + 1});
       const doubleFunction = (v) => Object.assign(v, {data: v.data * 2});
       const dataCollected: Array<number> = [];
-      const thirdPromise = Promise.resolve({
-        data: 3,
-        next: {
-          then: (resolver) => {
-            if (!resolver) {
-              // Skip catch call.
-              return;
-            }
-            expect(dataCollected).toEqual([4, 6, 8]);
-            done();
-          }
-        }
-      });
+      const thirdPromise =
+          Promise.resolve({data: 3, next: {[ChainedPromise.DONE]: 'done'}});
       const secondPromise = Promise.resolve({data: 2, next: thirdPromise});
       const testChainedPromise = new ChainedPromise((resolver) => {
         resolver({data: 1, next: secondPromise});
@@ -151,7 +134,12 @@ describe('ChainedPromise', function() {
           .forEach((v) => {
             dataCollected.push(v.data);
           })
-          .catch((err) => console.error(err.stack, err));
+          .then((v) => {
+            expect(v).toEqual('done');
+            expect(dataCollected).toEqual([4, 6, 8]);
+            done();
+          })
+          .catch(done);
     });
   });
   describe('then', function() {
@@ -170,7 +158,7 @@ describe('ChainedPromise', function() {
        });
   });
   describe('accumulate', function() {
-    it('should accumulate values', function(done) {
+    it('accumulates values', function(done) {
       const dataCollected: Array<number> = [];
       const thirdPromise =
           Promise.resolve({data: 3, next: {[ChainedPromise.DONE]: 'done'}});

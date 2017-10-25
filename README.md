@@ -58,6 +58,6 @@ Now that the chaining of the value has been configured, we can work on the serie
 
 This executes the given callback function, and the result itself is a promise that resolves into the value of the terminal node when it reaches the end.
 
-See [the example project](examples/wikipedia-list-links) for the full example code. Also see jsdoc to [ChainedPromise.ts](src/ChainedPromise.js) for more explanation of other functions such as `flatMap`.
+See [the example project](examples/wikipedia-list-links) for the full example code. Also see jsdoc to [ChainedPromise.ts](src/ChainedPromise.ts) for more explanation of other functions such as `flatMap`.
 
 Disclaimer: This is not an official Google product.

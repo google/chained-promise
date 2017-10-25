@@ -19,20 +19,20 @@
     "coveralls": "jest --coverage && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js",
     "travis": "jest",
     "posttravis": "yarn coveralls",
-    "doc": "./node_modules/jsdoc/jsdoc.js -c ./jsdocConfig.json"
+    "doc": "typedoc --out docs/ src/"
   },
   "authors": [
     "In-Ho Yi <yiinho@google.com>"
   ],
   "license": "Apache-2.0",
   "devDependencies": {
+    "@types/jest": "^21.1.4",
     "coveralls": "^2.11.6",
     "jest": "^21.2.1",
-    "jsdoc": "^3.4.0",
     "minami": "git+https://github.com/chajath/minami.git",
     "ts-jest": "^21.1.3",
-    "typescript": "^2.5.3",
-    "@types/jest": "^21.1.4"
+    "typedoc": "^0.9.0",
+    "typescript": "^2.5.3"
   },
   "jest": {
     "moduleFileExtensions": [

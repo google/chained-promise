@@ -199,7 +199,7 @@ describe('ChainedPromise', function() {
         resolver({data: {name: 'Test Person', ref: 42}, next: secondPromise});
       });
       testChainedPromise
-          .join<string, {data: joined}>(
+          .join<{data: joined}>(
               {data: {ref: (v) => new Promise((res) => res('Reference ' + v))}})
           .forEach<string>((v) => {
             dataCollected.push(v.data);
@@ -225,7 +225,7 @@ describe('ChainedPromise', function() {
         });
       });
       testChainedPromise
-          .join<string, {data: joined}>({
+          .join<{data: joined}>({
             data: {
               book: {
                 ref: (v) => new Promise((res) => res('Book reference ' + v))
@@ -264,7 +264,7 @@ describe('ChainedPromise', function() {
             {data: {name: 'Test Person', ref: [42, 43]}, next: secondPromise});
       });
       testChainedPromise
-          .join<string, {data: joined}>({
+          .join<{data: joined}>({
             data: {ref: [(v) => new Promise((res) => res('Reference ' + v))]}
           })
           .forEach((v) => {
@@ -297,7 +297,7 @@ describe('ChainedPromise', function() {
         });
       });
       testChainedPromise
-          .join<string, {data: joined}>({
+          .join<{data: joined}>({
             data: {
               refs: [
                 {book: (v) => new Promise((res) => res('Reference ' + v))}

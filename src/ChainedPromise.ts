@@ -225,8 +225,8 @@ class ChainedPromise<T> extends Promise<T> {
    * @template U
    * @template V
    */
-  join<U, V>(spec: ((t: T) => Promise<U>)|Array<Object>|
-             Object): ChainedPromise<V> {
+  join<V>(spec: ((t: T) => Promise<{}>)|Array<Object>|
+          Object): ChainedPromise<V> {
     this.flatMap((v) => {
       function pickAndJoin(curSpec, curValue) {
         if (typeof curSpec === 'function') {

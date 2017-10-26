@@ -266,10 +266,10 @@ class ChainedPromise<T> extends Promise<T> {
   collect<U, V>(fn: (t: T) => (U | V) = (x) => (x as any as U)) {
     const collected: Array<U|V> = [];
     return this
-        .forEach((v) => {
+        .forEach<V>((v) => {
           collected.push(fn(v));
         })
-        .then((done: V) => {
+        .then((done) => {
           collected.push(done);
           return collected;
         });

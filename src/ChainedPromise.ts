@@ -15,6 +15,11 @@
  */
 import fix from './fix';
 
+type SkipToken<T> = {
+  data: symbol,
+  next: ChainedPromise<T>
+};
+
 /**
  * An extended promise for recurring promises with multiple compositions.
  *
@@ -49,7 +54,7 @@ class ChainedPromise<T> extends Promise<T> {
    * Initializes fields common to both {@link ChainedPromise#constructor}
    * and {@link ChainedPromise#from} code path.
    */
-  private _initialize() {
+  private initialize() {
     this.flatMapChain = [];
   }
 
@@ -57,8 +62,14 @@ class ChainedPromise<T> extends Promise<T> {
    * Constructs next {@link ChainedPromise} that carries over settings and
    * composition properties of the current one.
    */
-  _nextPromise<U>(v: T): ChainedPromise<U> {
-    const nextPromise = ChainedPromise.from(this.next(v), this.next);
+  private nextPromise<U>(v: T|SkipToken<T>): ChainedPromise<U> {
+    let nextPromise;
+    if ((v as SkipToken<T>).data &&
+        (v as SkipToken<T>).data === ChainedPromise.SKIP) {
+      nextPromise = ChainedPromise.from((v as SkipToken<T>).next, this.next);
+    } else {
+      nextPromise = ChainedPromise.from(this.next(v as T), this.next);
+    }
     nextPromise.flatMapChain = this.flatMapChain;
     return ((nextPromise as any) as ChainedPromise<U>);
   }
@@ -70,7 +81,7 @@ class ChainedPromise<T> extends Promise<T> {
   constructor(executor, next = ChainedPromise.nextFieldPicker<T>('next')) {
     super(executor);
     this.next = next;
-    this._initialize();
+    this.initialize();
   }
 
   /**
@@ -132,13 +143,19 @@ class ChainedPromise<T> extends Promise<T> {
    * ChainedPromise.DONE} symbol.
    */
   forEach<V>(fn: (v: T) => void): Promise<V> {
-    return fix<T, V>((v: T, complete) => {
-      fn(v);
-      const nextPromise = this.next(v);
+    return fix<T, V>((v: T|SkipToken<T>, complete) => {
+      let nextPromise;
+      if ((v as SkipToken<T>).data &&
+          (v as SkipToken<T>).data === ChainedPromise.SKIP) {
+        nextPromise = (v as SkipToken<T>).next;
+      } else {
+        fn(v as T);
+        nextPromise = this.next(v as T);
+      }
       if (nextPromise[ChainedPromise.DONE] !== undefined) {
         return complete(nextPromise[ChainedPromise.DONE]);
       } else {
-        return this._nextPromise(v);
+        return this.nextPromise(v as T);
       }
     })(this);
   }
@@ -164,7 +181,7 @@ class ChainedPromise<T> extends Promise<T> {
    * Overrides Promise.then to compose with extra functions. See {@link
    * ChainedPromise} for the specifics of available compositions.
    */
-  then<TResult1 = T, TResult2 = never>(
+  then<TResult1 = T | SkipToken<T>, TResult2 = never>(
       onFulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>)|null|
       undefined,
       onRejected?: (result: any) => TResult2 |
@@ -181,8 +198,14 @@ class ChainedPromise<T> extends Promise<T> {
       return super.then(onFulfilled as any, onRejected as any) as any;
     } else {
       const firstFlatMapped = super.then(this.flatMapChain[0]);
-      let flatMapped = this.flatMapChain.slice(1).reduce(
-          (x, y) => x.then(y), firstFlatMapped);
+      let flatMapped = this.flatMapChain.slice(1).reduce((x, y) => {
+        return x.then((res) => {
+          if (res.data && res.data === ChainedPromise.SKIP) {
+            return res;
+          }
+          return y(res);
+        });
+      }, firstFlatMapped);
       return flatMapped.then(onFulfilled, onRejected);
     }
   }
@@ -276,12 +299,26 @@ class ChainedPromise<T> extends Promise<T> {
   }
 
   /**
+   * Filters for values that evaluates to `true`.
+   */
+  filter(fn: (t: T) => boolean): ChainedPromise<T|SkipToken<T>> {
+    return this.map<T|SkipToken<T>>((v) => {
+      if (!fn(v)) {
+        return {data: ChainedPromise.SKIP, next: this.next(v)};
+      }
+      return v;
+    });
+  }
+
+  /**
    * Symbol to indicate the end of promise chains. Having
    * `{[ChainedPromise.DONE]: <some value>}` as a next value will indicate the
    * end of the chain, and will cause fixed promises such as
    * {@link ChainedPromise#forEach} to resolve to the given value.
    */
   static DONE = Symbol('ChainedPromise.DONE');
+
+  private static SKIP = Symbol('ChainedPromise.SKIP');
 }
 
 export default ChainedPromise;

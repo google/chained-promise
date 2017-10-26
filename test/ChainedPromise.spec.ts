@@ -375,4 +375,27 @@ describe('ChainedPromise', function() {
           .catch(done);
     });
   });
+  describe('filter', () => {
+    it('skips data', (done) => {
+      const thirdPromise =
+          Promise.resolve({data: 3, next: {[ChainedPromise.DONE]: 'done'}});
+      const secondPromise = Promise.resolve({data: 2, next: thirdPromise});
+      const testChainedPromise =
+          new ChainedPromise<{data: number}>((resolver) => {
+            resolver({data: 1, next: secondPromise});
+          });
+      testChainedPromise
+          .map((v) => ({...v, data: v.data + 1}))  // [2, 3, 4]
+          .filter((v) => v.data % 2 == 0)          // [2, 4]
+          .map((v) => ({...v, data: v.data * 2}))  // [4, 8]
+          .collect<{data: number}, string>()
+          .then((result) => {
+            expect((result[0] as {data: number}).data).toEqual(4);
+            expect((result[1] as {data: number}).data).toEqual(8);
+            expect(result[2]).toEqual('done');
+            expect(result.length).toEqual(3);
+            done();
+          });
+    });
+  });
 });

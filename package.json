@@ -1,6 +1,6 @@
 {
   "name": "chained-promise",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Functional programming tools for recurring promises",
   "main": "dist/src/index.js",
   "repository": {
@@ -31,7 +31,7 @@
     "jest": "^21.2.1",
     "ts-jest": "^21.1.3",
     "typedoc": "^0.9.0",
-    "typescript": "^2.5.3"
+    "typescript": "^2.6.2"
   },
   "jest": {
     "moduleFileExtensions": [
